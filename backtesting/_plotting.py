@@ -173,7 +173,7 @@ def plot(*, results: pd.Series,
          filename='', title='', plot_width=None,
          plot_equity=True, plot_return=False, plot_pl=True,
          plot_volume=True, plot_drawdown=False, plot_trades=True,
-         show_trades=False,
+         show_stats=False, show_trades=False,
          smooth_equity=False, relative_equity=True,
          superimpose=True, resample=True,
          reverse_indicators=True,
@@ -673,9 +673,34 @@ return this.labels[index] || "";
         **kwargs  # type: ignore
     )
 
+    def _add_title(fig, title):
+        """"add plot title"""
+        return column(Div(text=f'<h1>{title}</h1>'), fig, sizing_mode=kwargs['sizing_mode'])
+
+    def _show_stats(fig):
+        """stats section"""
+        stats = pd.DataFrame(results[0:28])
+        numeric_columns = stats[stats[0] == pd.to_numeric(stats[0], errors="coerce")].notna().index
+        stats = stats.T
+        for col in numeric_columns:
+            stats[col] = stats[col].map('{:,.2f}'.format)
+        stats = stats.astype(str)
+        
+        def _create_data_table(df):
+            src = ColumnDataSource(df)
+            tc = [TableColumn(field=c, title=c) for c in df.columns]
+            data_table = DataTable(
+                source=src, columns=tc, fit_columns=True, index_position=None,
+                disabled=True, reorderable=False, height=60)
+            return data_table
+
+        column_component_stats = _create_data_table(stats[stats.columns[0:14]])
+        column_component_trades = _create_data_table(stats[stats.columns[14:28]])
+        return column(column_component_stats, column_component_trades, fig, sizing_mode=kwargs['sizing_mode'])
+
     def _show_trades(fig):
         """trades section"""
-        trades = results['_trades']
+        trades = results['_trades'].copy(deep=True)
         trades.insert(0, '#', trades.index+1)
         trades['ReturnPct'] *= 100.0
         numeric_columns = ['Size', 'EntryPrice', 'ExitPrice', 'PnL', 'ReturnPct']
@@ -687,18 +712,16 @@ return this.labels[index] || "";
         data_table = DataTable(source=src, columns=tc, fit_columns=True, index_position=None)
         return column(fig, data_table, sizing_mode=kwargs['sizing_mode'])
 
-    # show trades
     if show_trades:
         fig = _show_trades(fig)
 
+    if show_stats:
+        fig = _show_stats(fig)
+
     if title:
-        col = column(
-            Div(text=f'<h1>{title}</h1>'),
-            fig,
-            sizing_mode=kwargs['sizing_mode'])
-        show(col, browser=None if open_browser else 'none')
-    else:
-        show(fig, browser=None if open_browser else 'none')
+        fig = _add_title(fig, title)
+
+    show(fig, browser=None if open_browser else 'none')
     return fig
 
 
