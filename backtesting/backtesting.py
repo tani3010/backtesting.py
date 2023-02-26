@@ -1552,11 +1552,12 @@ class Backtest:
 
     _mp_backtests: Dict[float, Tuple['Backtest', List, Callable]] = {}
 
-    def plot(self, *, results: pd.Series = None, filename=None, title='', plot_width=None,
+    def plot(self, *, results: pd.Series=None, filename=None, title='', plot_width=None,
              plot_equity=True, plot_return=False, plot_pl=True,
              plot_volume=True, plot_drawdown=False, plot_trades=True,
+             show_stats=False, show_trades=False,
              smooth_equity=False, relative_equity=True,
-             superimpose: Union[bool, str] = True,
+             superimpose: Union[bool, str]=True,
              resample=True, reverse_indicators=False,
              show_legend=True, open_browser=True):
         """
@@ -1656,6 +1657,8 @@ class Backtest:
             plot_volume=plot_volume,
             plot_drawdown=plot_drawdown,
             plot_trades=plot_trades,
+            show_stats=show_stats,
+            show_trades=show_trades,
             smooth_equity=smooth_equity,
             relative_equity=relative_equity,
             superimpose=superimpose,
