@@ -203,6 +203,8 @@ def resample_apply(rule: str,
                    series: Union[pd.Series, pd.DataFrame, _Array],
                    *args,
                    agg: Optional[Union[str, dict]] = None,
+                   closed: str = 'right',
+                   label: str = 'right',
                    **kwargs):
     """
     Apply `func` (such as an indicator) to `series`, resampled to
@@ -291,7 +293,7 @@ http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
             agg = {column: OHLCV_AGG.get(column, 'last')
                    for column in series.columns}
 
-    resampled = series.resample(rule, label='right').agg(agg).dropna()
+    resampled = series.resample(rule, closed=closed, label=label).agg(agg).dropna()
     resampled.name = _as_str(series) + '[' + rule + ']'
 
     # Check first few stack frames if we are being called from
